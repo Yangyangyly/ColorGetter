@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片像素颜色拾取网页工具</title>
+    <style>
+        .page.main {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            --input-view-height: 35px;
+        }
+
+        .page.main .control-view {
+            height: var(--input-view-height);
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            text-align: center;
+            justify-content: center;
+            gap: 3px;
+            padding-bottom: 5px;
+        }
+
+        .page.main .show-view {
+            position: absolute;
+            height: calc(100% - var(--input-view-height) - 5px);
+            width: 100%;
+            text-align: center;
+        }
+
+        #img-input {
+            height: var(--input-view-height);
+            line-height: var(--input-view-height);
+        }
+
+        #pix-color {
+            height: var(--input-view-height);
+            width: var(--input-view-height);
+            line-height: var(--input-view-height);
+        }
+
+        #pix-rgb-hex {
+            height: var(--input-view-height)x;
+            width: 60px;
+            line-height: var(--input-view-height);
+        }
+		#pix-rgb-hex2 {
+            height: var(--input-view-height)x;
+            width: 140px;
+            line-height: var(--input-view-height);
+        }
+
+        canvas {
+            position: relative;
+            margin: 0;
+        }
+
+        input {
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page main">
+            <div class="control-view">
+                <input type="file" name="" id="img-input">
+                <div id="pix-color"> </div>
+                <div id="pix-rgb-hex"></div>
+				<div id="pix-rgb-hex2"></div>
+            </div>
+            <div class="show-view">
+                <canvas id="img-show"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        const show_view = document.getElementsByClassName('show-view')[0];
+        const img_show_canvas = document.getElementById('img-show');
+        const img_input = document.getElementById('img-input');
+        const pix_color = document.getElementById('pix-color');
+        const pix_rgb_hex = document.getElementById('pix-rgb-hex');
+		const pix_rgb_hex2 = document.getElementById('pix-rgb-hex2');
+
+        let imgObj;
+
+        /** 打开图片 */
+        async function openImage(blob) {
+            return new Promise((resolve, _) => {
+                let img = new Image();
+                img.src = URL.createObjectURL(blob);
+                img.onload = () => {
+                    imgObj = img;
+                    resolve(true);
+                }
+                img.onerror = () => {
+                    resolve(false);
+                }
+            });
+        }
+
+        /** 绘制图片到canvas */
+        function drawImage() {
+            if (imgObj) {
+                const ctx = img_show_canvas.getContext('2d');
+                ctx.drawImage(imgObj, 0, 0, img_show_canvas.width, img_show_canvas.height);
+            }
+        }
+
+        /** 更新canvas组件的尺寸 */
+        function resizeCanvas() {
+            img_show_canvas.width = show_view.clientWidth - 10;
+            img_show_canvas.height = show_view.clientHeight - 10;
+        }
+
+        /** rgb数值转为16进制 */
+        function rgbToHex(rgb_list) {
+            let hex_str = '#';
+            for (let i = 0; i < rgb_list.length; i++) {
+                hex_str += rgb_list[i].toString(16).padStart(2, '0');
+            }
+            return hex_str.toUpperCase();
+        }
+
+        /** 文件输入更新检测 */
+        img_input.onchange = function (e) {
+            const files = e.target.files;
+            if (files && files.length && files.length > 0) {
+                const file = files[0];
+                const blob = new Blob([file], { type: file.type });
+                openImage(blob).then((state) => {
+                    console.log('图片加载完毕，状态：', state);
+                    resizeCanvas();
+                    drawImage();
+                });
+            }
+        }
+
+        /** 更新像素颜色 */
+        function updatePixColor(e) {
+            const { clientX, clientY } = e;
+            const rect = img_show_canvas.getBoundingClientRect();
+            const cur_x = clientX - rect.left * (img_show_canvas.width / rect.width);
+            const cur_y = clientY - rect.top * (img_show_canvas.height / rect.height);
+            const ctx = img_show_canvas.getContext('2d');
+            const data = ctx.getImageData(cur_x, cur_y, 1, 1).data;
+            const [r, g, b, a] = data;
+            pix_rgb_hex.innerText = rgbToHex([r, g, b]);
+			pix_rgb_hex2.innerText = "rgb("+r+","+g+","+b+")";
+            pix_color.style.backgroundColor = rgbToHex([r, g, b]);
+            // console.log(cur_x, cur_y);
+        }
+
+        let canvas_mouse_state = false;
+        img_show_canvas.addEventListener('mousedown', (e) => {
+            canvas_mouse_state = true;
+            updatePixColor(e);
+        });
+        img_show_canvas.addEventListener('mouseup', (e) => {
+            canvas_mouse_state = false;
+        })
+
+        img_show_canvas.addEventListener('mousemove', (e) => {
+            if (canvas_mouse_state) {
+                updatePixColor(e);
+            }
+        })
+
+        /* 网页加载完毕后初始化canvas */
+        window.onload = function () {
+            resizeCanvas()
+        }
+        /* 当网页尺寸改变时修改canvas尺寸 */
+        window.onresize = function () {
+            resizeCanvas();
+            drawImage();
+        }
+    </script>
+</body>
+
+</html>

@@ -73,7 +73,7 @@
             <div class="control-view">
                 <input type="file" name="" id="img-input">
                 <div id="pix-color"> </div>
-                <div id="pix-rgb-hex"></div>
+                <!-- <div id="pix-rgb-hex"></div> -->
 				<div id="pix-rgb-hex2"></div>
             </div>
             <div class="show-view">
@@ -86,7 +86,7 @@
         const img_show_canvas = document.getElementById('img-show');
         const img_input = document.getElementById('img-input');
         const pix_color = document.getElementById('pix-color');
-        const pix_rgb_hex = document.getElementById('pix-rgb-hex');
+        //const pix_rgb_hex = document.getElementById('pix-rgb-hex');
 		const pix_rgb_hex2 = document.getElementById('pix-rgb-hex2');
 
         let imgObj;
@@ -152,7 +152,7 @@
             const ctx = img_show_canvas.getContext('2d');
             const data = ctx.getImageData(cur_x, cur_y, 1, 1).data;
             const [r, g, b, a] = data;
-            pix_rgb_hex.innerText = rgbToHex([r, g, b]);
+            //pix_rgb_hex.innerText = rgbToHex([r, g, b]);
 			pix_rgb_hex2.innerText = "rgb("+r+","+g+","+b+")";
             pix_color.style.backgroundColor = rgbToHex([r, g, b]);
             // console.log(cur_x, cur_y);

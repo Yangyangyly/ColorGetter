@@ -45,12 +45,12 @@
         }
 
         #pix-rgb-hex {
-            height: var(--input-view-height)x;
+            height: var(--input-view-height);
             width: 60px;
             line-height: var(--input-view-height);
         }
-		#pix-rgb-hex2 {
-            height: var(--input-view-height)x;
+        #pix-rgb-hex2 {
+            height: var(--input-view-height);
             width: 140px;
             line-height: var(--input-view-height);
         }
@@ -110,7 +110,10 @@
         function drawImage() {
             if (imgObj) {
                 const ctx = img_show_canvas.getContext('2d');
-                ctx.drawImage(imgObj, 0, 0, img_show_canvas.width, img_show_canvas.height);
+                const scale = Math.min(img_show_canvas.width / imgObj.width, img_show_canvas.height / imgObj.height);
+                const x = (img_show_canvas.width - imgObj.width * scale) / 2;
+                const y = (img_show_canvas.height - imgObj.height * scale) / 2;
+                ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
             }
         }
 
